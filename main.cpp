@@ -24,7 +24,7 @@ Graph *geraGraph()
     Graph *graph = new Graph(order);
     int i = 0;
     // graph->insertEdge(0, 1);
-    // Preenchendo a matriz de adjacencia.
+    // Preenchendo as arestas do grafo.
     int vert1 = 0;
     int vert2 = 0;
     while (i < numEdges)
@@ -53,7 +53,7 @@ void matrizAdj(int matrizADJ[100][100], Graph *graph)
             matrizADJ[j][k] = 0;
         }
     }
-
+    //preenche matriz de adjacencia
     for (Node *p = graph->getFirstNode(); p != NULL; p = p->getNextNode())
     {
         for (Edge *q = p->getFirstEdge(); q != NULL; q = q->getNextEdge())
@@ -72,7 +72,7 @@ void vetorBin(int vet[4950], int matrizADJ[100][100])
     {
         vet[o] = 0;
     }
-
+    //preenche vetor binario
     for (int j = 0; j < 100; j++)
     {
         for (int k = 0; k < 100; k++)
@@ -93,7 +93,7 @@ void vetorCompact(int vetBin[4950], int vetCompact[], int tamanho)
     {
         vetCompact[i] = 0;
     }
-
+    //preenche vetor de posicoes
     for (int i = 0; i < 4950; i++)
     {
         if (vetBin[i] == 1)
@@ -117,11 +117,11 @@ void matrizAdjPorCompact(int vetCompact[], int tamanho, int matrizADJTriSup[100]
 
     int linha = 0;
     int coluna = 0;
-
+    //transforma de vetor de posicoes para posicao em matriz adjacente.
     for (int i = 0; i < tamanho; i++)
     {
         valor = vetCompact[i];
-        cout << "valor " << i << ": " << valor;
+        // cout << "valor " << i << ": " << valor;
 
         while (contador != valor)
         {
@@ -137,14 +137,14 @@ void matrizAdjPorCompact(int vetCompact[], int tamanho, int matrizADJTriSup[100]
             }
             contador++;
         }
-        cout << "-- linha: " << linha << "-- coluna: " << coluna << endl;
+        // cout << "-- linha: " << linha << "-- coluna: " << coluna << endl;
         matrizADJTriSup[linha][coluna] = 1;
         matrizADJTriSup[coluna][linha] = 1;
     }
-    cout << "teste1" << endl;
 }
 int posicaoPorIter(int linha, int coluna)
 {
+    //acha a posicao por iteracao
     int contadorIteracao = 0;
     bool chegou = false;
     for (int i = 1; i <= 100 && !chegou; i++)
@@ -165,6 +165,7 @@ int posicaoPorIter(int linha, int coluna)
 }
 int posicaoPorRecur(int linha, int coluna, int i, int j, int contador)
 {
+    //acha a posicao por recursao
     if (j > i)
     {
         contador++;
@@ -229,6 +230,8 @@ void mapeamentoInverso(ofstream &output_file, Graph *graph)
     int contador = 1;
     int linha = 0;
     int coluna = 1;
+
+    //while responsavel para achar linha e coluna
     while (contador != valor)
     {
         if (coluna < 99)
@@ -246,7 +249,7 @@ void mapeamentoInverso(ofstream &output_file, Graph *graph)
 
     if (matrizADJ[linha][coluna] == 1)
     {
-        output_file << "Aresta encontrada na linha " << linha << " e coluna " << coluna << endl;
+        output_file << "Aresta encontrada na linha " << linha + 1 << " e coluna " << coluna + 1 << "ou seja" <<" na posicao da linha " << linha << " e coluna " << coluna << endl;
     }
     else
     {
@@ -271,7 +274,7 @@ void matOperat(ofstream &output_file)
             matPRODUTO[i][j] = 0;
         }
     }
-
+    //preenchendo as matrizes
     for (int i = 0; i < 9; i++)
     {
         for (int j = 0; j < 9; j++)
@@ -296,6 +299,8 @@ void matOperat(ofstream &output_file)
         vetMat1[j] = 0;
         vetMat2[j] = 0;
     }
+
+    //preenchendo os vetores
     int contador1 = 0;
     for (int j = 0; j < 9; j++)
     {
@@ -363,7 +368,7 @@ void matOperat(ofstream &output_file)
         {
             if (k >= j)
             {
-
+                //pega os numeros dos vetoresMatriz e realiza as contas necessarias para preencher a matriz Produto.
                 for (int i = 0; i < 9; i++)
                 {
                     calculo1 = (linha1 + 1) * 9 - 9 - (((linha1 + 1) * ((linha1 + 1) - 1)) / 2) + (coluna1 + 1 - (linha1 + 1));
@@ -493,8 +498,6 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
         vetorCompact(vetBin, vetCompact, tamanho);
         int matrizADJTriSup[100][100];
         matrizAdjPorCompact(vetCompact, tamanho, matrizADJTriSup);
-
-        cout << "teste2" << endl;
         for (int i = 0; i < 100; i++)
         {
             for (int j = 0; j < 100; j++)
@@ -503,7 +506,6 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
             }
             output_file << "|" << endl;
         }
-        cout << "teste3" << endl;
         output_file << endl;
         output_file << endl;
         break;
