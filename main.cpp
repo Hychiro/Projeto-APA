@@ -8,103 +8,249 @@
 #include <stdlib.h>
 #include <chrono>
 #include "Graph.h"
-#include "Node.h"
-#include "Edge.h"
-#include "Graph.cpp"
-#include "Node.cpp"
-#include "Edge.cpp"
 
 using namespace std;
 
-Graph *leitura(ifstream &input_file, int directed, int weightedEdge, int weightedNode)
+Graph *geraGraph()
 {
+    srand(time(NULL));
 
-    //Variáveis para auxiliar na criação dos nós no Grafo
-    int idNodeSource;
-    int idNodeTarget;
-    int order;
-
-    //Pegando a ordem do grafo
-    input_file >> order;
-
-    //Criando objeto grafo
-    Graph *graph = new Graph(order, directed, weightedEdge, weightedNode);
-
-    //Leitura de arquivo
-
-    if (!graph->getWeightedEdge() && !graph->getWeightedNode())
+    // Variáveis para auxiliar na criação dos nós no Grafo
+    int order = 100;
+    int vAleatorio = 1 + rand() % 10;
+    // int numEdges = vAleatorio * order;
+    int numEdges = 10;
+    // Criando objeto grafo
+    Graph *graph = new Graph(order);
+    int i = 0;
+    // Preenchendo a matriz de adjacencia.
+    int vert1 = 0;
+    int vert2 = 0;
+    graph->insertEdge(0, 1);
+    while (i < numEdges)
     {
-
-        while (input_file >> idNodeSource >> idNodeTarget)
+        vert1 = rand() % 100;
+        vert2 = rand() % 100;
+        if (vert1 != vert2)
         {
-
-            graph->insertEdge(idNodeSource, idNodeTarget, 1);
-        }
-    }
-    else if (graph->getWeightedEdge() && !graph->getWeightedNode())
-    {
-
-        float edgeWeight;
-
-        while (input_file >> idNodeSource >> idNodeTarget >> edgeWeight)
-        {
-
-            graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight);
-        }
-    }
-    else if (graph->getWeightedNode() && !graph->getWeightedEdge())
-    {
-
-        float nodeSourceWeight, nodeTargetWeight;
-
-        while (input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight)
-        {
-
-            graph->insertEdge(idNodeSource, idNodeTarget, 1);
-            graph->getNode(idNodeSource)->setWeight(nodeSourceWeight);
-            graph->getNode(idNodeTarget)->setWeight(nodeTargetWeight);
-        }
-    }
-    else if (graph->getWeightedNode() && graph->getWeightedEdge())
-    {
-
-        float nodeSourceWeight, nodeTargetWeight, edgeWeight;
-
-        while (input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight)
-        {
-
-            graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight);
-            graph->getNode(idNodeSource)->setWeight(nodeSourceWeight);
-            graph->getNode(idNodeTarget)->setWeight(nodeTargetWeight);
+            if (!graph->verificaAresta(vert1, vert2))
+            {
+                graph->insertEdge(vert1, vert2);
+                i++;
+            }
         }
     }
 
     return graph;
 }
 
-Graph *leituraInstancia(ifstream &input_file, int directed, int weightedEdge, int weightedNode)
+void matrizAdj(int matrizADJ[100][100], Graph *graph)
 {
-
-    //Variáveis para auxiliar na criação dos nós no Grafo
-    int idNodeSource;
-    int idNodeTarget;
-    int order;
-    int numEdges;
-
-    //Pegando a ordem do grafo
-    input_file >> order;
-
-    //Criando objeto grafo
-    Graph *graph = new Graph(order, directed, weightedEdge, weightedNode);
-
-    //Leitura de arquivo
-    while (input_file >> idNodeSource >> idNodeTarget)
+    for (int j = 0; j < 100; j++)
     {
-
-        graph->insertEdge(idNodeSource, idNodeTarget, 1);
+        for (int k = 0; k < 100; k++)
+        {
+            matrizADJ[j][k] = 0;
+        }
     }
 
-    return graph;
+    for (Node *p = graph->getFirstNode(); p != NULL; p = p->getNextNode())
+    {
+        for (Edge *q = p->getFirstEdge(); q != NULL; q = q->getNextEdge())
+        {
+            // if (matrizADJ[p->getId()][q->getTargetId()] == 0 && matrizADJ[q->getTargetId()][p->getId()] == 0)
+            // {
+            matrizADJ[p->getId()][q->getTargetId()] = 1;
+            // }
+        }
+    }
+}
+void vetorBin(int vet[4950], int matrizADJ[100][100])
+{
+    int i = 0;
+    for (int o = 0; o < 4950; o++)
+    {
+        vet[o] = 0;
+    }
+
+    for (int j = 0; j < 100; j++)
+    {
+        for (int k = 0; k < 100; k++)
+        {
+            if (k > j)
+            {
+                vet[i] = matrizADJ[j][k];
+                i++;
+            }
+        }
+    }
+}
+
+void vetorCompact(int vetBin[4950], int vetCompact[], int tamanho)
+{
+    int contador = 0;
+    for (int i = 0; i < tamanho; i++)
+    {
+        vetCompact[i] = 0;
+    }
+
+    for (int i = 0; i < 4950; i++)
+    {
+        if (vetBin[i] == 1)
+        {
+            vetCompact[contador] = i + 1;
+            contador++;
+        }
+    }
+}
+void matrizAdjPorCompact(int vetCompact[], int tamanho, int matrizADJTriSup[100][100])
+{
+    for (int j = 0; j < 100; j++)
+    {
+        for (int k = 0; k < 100; k++)
+        {
+            matrizADJTriSup[j][k] = 0;
+        }
+    }
+    int valor = 0;
+    int contador = 1;
+
+    int linha = 0;
+    int coluna = 1;
+
+    for (int i = 0; i < tamanho; i++)
+    {
+        valor = vetCompact[i];
+
+        while (contador != valor)
+        {
+            if (coluna < 100)
+            {
+                coluna++;
+            }
+            else
+            {
+                linha++;
+                coluna = linha;
+                coluna++;
+                contador--;
+            }
+            contador++;
+        }
+        matrizADJTriSup[linha][coluna] = 1;
+        matrizADJTriSup[coluna][linha] = 1;
+    }
+}
+int posicaoPorIter(int linha, int coluna)
+{
+    int contadorIteracao = 0;
+    bool chegou = false;
+    for (int i = 1; i <= 100 && !chegou; i++)
+    {
+        for (int j = 1; j <= 100 && !chegou; j++)
+        {
+            if (j > i && !chegou)
+            {
+                contadorIteracao++;
+            }
+            if (linha == i && coluna == j)
+            {
+                chegou = true;
+            }
+        }
+    }
+    return contadorIteracao;
+}
+int posicaoPorRecur(int linha, int coluna, int i, int j, int contador)
+{
+    if (j > i)
+    {
+        contador++;
+    }
+    if (linha == i && coluna == j)
+    {
+        return contador;
+    }
+    if (j == 100)
+    {
+        return posicaoPorRecur(linha, coluna, i + 1, 0, contador);
+    }
+    else
+    {
+        return posicaoPorRecur(linha, coluna, i, j + 1, contador);
+    }
+}
+
+void mapeamento(ofstream &output_file)
+{
+    int linha, coluna;
+    int n = 100;
+
+    cout << "Inserir a linha i entre 1 e 100: ";
+    cin >> linha;
+    cout << "Inserir a coluna j entre 1 e 100: ";
+    cin >> coluna;
+
+    if (linha > coluna || linha < 1 || linha > 100 || coluna < 1 || coluna > 100)
+    {
+        cout << "Entrada invalida";
+        return;
+    }
+
+    int calculo = linha * n - n - ((linha * (linha - 1)) / 2) + (coluna - linha);
+    output_file << "Posicao no vetor por CALCULO: " << calculo << endl;
+    output_file << "Posicao no vetor por ITERACAO: " << posicaoPorIter(linha, coluna) << endl;
+    output_file << "Posicao no vetor por RECURCAO: " << posicaoPorRecur(linha, coluna, 1, 1, 0) << endl;
+}
+void mapeamentoInverso(ofstream &output_file, Graph *graph)
+{
+
+    int vetBin[4950];
+
+    int matrizADJ[100][100];
+    matrizAdj(matrizADJ, graph);
+    vetorBin(vetBin, matrizADJ);
+    int tamanho = 0;
+    for (int o = 0; o < 4950; o++)
+    {
+        tamanho = vetBin[o] + tamanho;
+    }
+    int vetCompact[tamanho];
+    vetorCompact(vetBin, vetCompact, tamanho);
+
+    int indice;
+    cout << "digite um valor para o indice de 0 a " << tamanho - 1 << endl;
+    cin >> indice;
+
+    int valor = vetCompact[indice];
+
+    int contador = 1;
+    int linha = 0;
+    int coluna = 1;
+    while (contador != valor)
+    {
+        if (coluna < 100)
+        {
+            coluna++;
+        }
+        else
+        {
+            linha++;
+            coluna = linha;
+            coluna++;
+            contador--;
+        }
+        contador++;
+    }
+
+    if (matrizADJ[linha][coluna] == 1)
+    {
+        output_file << "Aresta encontrada na linha " << linha << " e coluna " << coluna << endl;
+    }
+    else
+    {
+        cout << "erro" << endl;
+    }
 }
 
 int menu()
@@ -114,17 +260,13 @@ int menu()
 
     cout << "MENU" << endl;
     cout << "----" << endl;
-    cout << "[1] fechoTransitivoIndireto" << endl;
-    cout << "[2] Fecho Transitivo Direto" << endl;
-    cout << "[3] Caminho Mínimo entre dois vértices - Floyd" << endl;
-    cout << "[4] Árvore Geradora Mínima de Kruskal" << endl;
-    cout << "[5] Árvore Geradora Mínima de Prim" << endl;
-    cout << "[6] Imprimir caminhamento em Profundidade" << endl;
+    cout << "[1] matriz adjacência binária" << endl;
+    cout << "[2] vetor binario" << endl;
+    cout << "[3] vetor compactado" << endl;
+    cout << "[4] matriz adjacência binária a partir do vetor compactado" << endl;
+    cout << "[5] busca no vetor de valores por parametro i,j" << endl;
+    cout << "[6] busca inversa dos valores do vetor para posição na matriz" << endl;
     cout << "[7] Imprimir ordenacao topológica" << endl;
-    cout << "[8] Caminho Mínimo entre dois vértices - Dijkstra" << endl;
-    cout << "[9] Printando o Grafo " << endl;
-    cout << "[10] Algoritmo Guloso Randomizado Reativo" << endl;
-    cout << "[11] Algoritmo Guloso Randomizado" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -132,114 +274,108 @@ int menu()
     return selecao;
 }
 
-void selecionar(int selecao, Graph *graph, ofstream &output_file)
+void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
 {
 
     switch (selecao)
     {
-    //fechoTransitivoIndireto;
+    // fechoTransitivoIndireto;
     case 1:
     {
-        int x;
-        cout << "Digite o id o noh a ser pesquisado: ";
-        cin >> x;
-        graph->fechoTransitivoIndireto(output_file, x);
+        int matrizADJ[100][100];
+        matrizAdj(matrizADJ, graph);
+        for (int j = 0; j < order; j++)
+        {
+            for (int k = 0; k < order; k++)
+            {
+                output_file << "|" << matrizADJ[j][k];
+            }
+            output_file << "|" << endl;
+        }
         break;
     }
-    //fechoTransitivoDireto;
+    // fechoTransitivoDireto;
     case 2:
     {
-        int x;
-        cout << "Digite o id o noh a ser pesquisado: ";
-        cin >> x;
-        graph->fechoTransitivoDireto(output_file, x);
+        int vetBin[4950];
+        int matrizADJ[100][100];
+        matrizAdj(matrizADJ, graph);
+        vetorBin(vetBin, matrizADJ);
+        for (int o = 0; o < 4950; o++)
+        {
+            output_file << "|" << vetBin[o];
+        }
+        output_file << "|" << endl;
+
         break;
     }
     case 3:
     {
-        output_file << "Caminho minimo por Floyd:: " << endl;
-        cout << "Digite o vertice de origem:" << endl;
-        int origem;
-        cin >> origem;
-        cout << "Digite o vertice de destino:" << endl;
-        int destino;
-        cin >> destino;
-        graph->floydMarshall(output_file, origem, destino);
+        int vetBin[4950];
+
+        int matrizADJ[100][100];
+        matrizAdj(matrizADJ, graph);
+        vetorBin(vetBin, matrizADJ);
+        int tamanho = 0;
+        for (int o = 0; o < 4950; o++)
+        {
+            tamanho = vetBin[o] + tamanho;
+        }
+        int vetCompact[tamanho];
+        vetorCompact(vetBin, vetCompact, tamanho);
+        for (int o = 0; o < tamanho; o++)
+        {
+            output_file << "|" << vetCompact[o];
+        }
+        output_file << "|" << endl;
         break;
     }
 
-    //AGM - Kruscal;
+    // AGM - Kruscal;
     case 4:
     {
-        Graph *novoSubGrafo = graph->agmKuskal(output_file);
-        novoSubGrafo->printGraph(output_file);
+        int vetBin[4950];
+        int matrizADJ[100][100];
+        matrizAdj(matrizADJ, graph);
+        vetorBin(vetBin, matrizADJ);
+        int tamanho = 0;
+        for (int o = 0; o < 4950; o++)
+        {
+            tamanho = vetBin[o] + tamanho;
+        }
+        int vetCompact[tamanho];
+        vetorCompact(vetBin, vetCompact, tamanho);
+        int matrizADJTriSup[100][100];
+        matrizAdjPorCompact(vetCompact, tamanho, matrizADJTriSup);
+        for (int j = 0; j < order; j++)
+        {
+            for (int k = 0; k < order; k++)
+            {
+                output_file << "|" << matrizADJTriSup[j][k];
+            }
+            output_file << "|" << endl;
+        }
         break;
     }
-    //AGM Prim;
+    // AGM Prim;
     case 5:
     {
-        Graph *grafoX = graph->agmPrim(output_file);
-        grafoX->printGraph(output_file);
+        mapeamento(output_file);
         break;
     }
-    //Imprimir caminhamento em Profundidade
+    // Imprimir caminhamento em Profundidade
     case 6:
     {
-        int x;
-        cout << "Digite o id o noh a por onde começara o caminhamento: ";
-        cin >> x;
-        Graph *novoGrafo = graph->caminhamentoDeProfundidade(x);
-        novoGrafo->printGraph(output_file);
+        mapeamentoInverso(output_file, graph);
         break;
     }
-    //Ordenação Topologica;
+    // Ordenação Topologica;
     case 7:
     {
 
-        if (graph->getDirected())
-        {
-
-            int *ordTop = graph->topologicalSorting();
-            if ((ordTop != NULL))
-            {
-                output_file << "Ordenação Topologica:" << endl;
-                for (int i = 0; i < graph->getOrder(); i++)
-                {
-                    output_file << ordTop[i];
-                    output_file << endl;
-                }
-            }
-            else
-            {
-                output_file << "Grafo possui circuito, nao possui ordenação topologica" << endl;
-            }
-        }
-        else
-        {
-            output_file << "Grafo não direcionado -  nao possui ordenação topologica" << endl;
-        }
-
         break;
     }
-    //Caminho Mínimo entre dois vértices - Dijkstra
-    case 8:
-    {
-        int x, y;
-        cout << "Digite o id Source: ";
-        cin >> x;
-        cout << "Digite o id Target: ";
-        cin >> y;
-        graph->dijkstra(output_file, x, y);
-        break;
-    }
-    //Printa grafo
-    case 9:
-    {
-
-        graph->printGraph(output_file);
-
-        break;
-    }
+    // Caminho Mínimo entre dois vértices - Dijkstra
     default:
     {
         cout << " Error!!! invalid option!!" << endl;
@@ -254,11 +390,11 @@ int mainMenu(ofstream &output_file, Graph *graph)
 
     while (selecao != 0)
     {
-        system("cls");
+        // system("cls");
         selecao = menu();
 
         if (output_file.is_open())
-            selecionar(selecao, graph, output_file);
+            selecionar(selecao, graph, output_file, graph->getOrder());
 
         else
             cout << "Unable to open the output_file" << endl;
@@ -272,46 +408,33 @@ int mainMenu(ofstream &output_file, Graph *graph)
 int main(int argc, char const *argv[])
 {
 
-    //Verificação se todos os parâmetros do programa foram entrados
-    if (argc != 6)
+    // Verificação se todos os parâmetros do programa foram entrados
+    if (argc != 2)
     {
 
-        cout << "ERROR: Expecting: ./<program_name> <input_file> <output_file> <directed> <weighted_edge> <weighted_node> " << endl;
+        cout << "ERROR: Expecting: ./<program_name> <output_file>" << endl;
         return 1;
     }
 
     string program_name(argv[0]);
-    string input_file_name(argv[1]);
 
-    string instance;
-    if (input_file_name.find("v") <= input_file_name.size())
-    {
-        string instance = input_file_name.substr(input_file_name.find("v"));
-        cout << "Running " << program_name << " with instance " << instance << " ... " << endl;
-    }
+    cout << "Running " << program_name << " ... " << endl;
 
-    //Abrindo arquivo de entrada
-    ifstream input_file;
+    // Abrindo arquivo de entrada
+
     ofstream output_file;
-    input_file.open(argv[1], ios::in);
-    output_file.open(argv[2], ios::out | ios::trunc);
+
+    output_file.open(argv[1], ios::out | ios::trunc);
 
     Graph *graph;
 
-    if (input_file.is_open())
-    {
-
-        graph = leitura(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
-    }
-    else
-        cout << "Unable to open " << argv[1];
+    graph = geraGraph();
 
     mainMenu(output_file, graph);
 
-    //Fechando arquivo de entrada
-    input_file.close();
+    // Fechando arquivo de entrada
 
-    //Fechando arquivo de saída
+    // Fechando arquivo de saída
     output_file.close();
 
     return 0;
