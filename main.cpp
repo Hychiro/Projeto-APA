@@ -231,7 +231,7 @@ void mapeamentoInverso(ofstream &output_file, Graph *graph)
     int coluna = 1;
     while (contador != valor)
     {
-        if (coluna < 100)
+        if (coluna < 99)
         {
             coluna++;
         }
@@ -240,7 +240,6 @@ void mapeamentoInverso(ofstream &output_file, Graph *graph)
             linha++;
             coluna = linha;
             coluna++;
-            contador--;
         }
         contador++;
     }
