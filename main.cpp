@@ -18,15 +18,15 @@ Graph *geraGraph()
     // Variáveis para auxiliar na criação dos nós no Grafo
     int order = 100;
     int vAleatorio = 1 + rand() % 10;
-    // int numEdges = vAleatorio * order;
-    int numEdges = 10;
-    // Criando objeto grafo
+    int numEdges = vAleatorio * order;
+    //   int numEdges = 10;
+    //  Criando objeto grafo
     Graph *graph = new Graph(order);
     int i = 0;
+    // graph->insertEdge(0, 1);
     // Preenchendo a matriz de adjacencia.
     int vert1 = 0;
     int vert2 = 0;
-    graph->insertEdge(0, 1);
     while (i < numEdges)
     {
         vert1 = rand() % 100;
@@ -113,18 +113,19 @@ void matrizAdjPorCompact(int vetCompact[], int tamanho, int matrizADJTriSup[100]
         }
     }
     int valor = 0;
-    int contador = 1;
+    int contador = 0;
 
     int linha = 0;
-    int coluna = 1;
+    int coluna = 0;
 
     for (int i = 0; i < tamanho; i++)
     {
         valor = vetCompact[i];
+        cout << "valor " << i << ": " << valor;
 
         while (contador != valor)
         {
-            if (coluna < 100)
+            if (coluna < 99)
             {
                 coluna++;
             }
@@ -133,13 +134,14 @@ void matrizAdjPorCompact(int vetCompact[], int tamanho, int matrizADJTriSup[100]
                 linha++;
                 coluna = linha;
                 coluna++;
-                contador--;
             }
             contador++;
         }
+        cout << "-- linha: " << linha << "-- coluna: " << coluna << endl;
         matrizADJTriSup[linha][coluna] = 1;
         matrizADJTriSup[coluna][linha] = 1;
     }
+    cout << "teste1" << endl;
 }
 int posicaoPorIter(int linha, int coluna)
 {
@@ -253,6 +255,142 @@ void mapeamentoInverso(ofstream &output_file, Graph *graph)
     }
 }
 
+void matOperat(ofstream &output_file)
+{
+
+    int mat1[9][9];
+    int mat2[9][9];
+    int matSOMA[9][9];
+    int matPRODUTO[9][9];
+    for (int i = 0; i < 9; i++)
+    {
+        for (int j = 0; j < 9; j++)
+        {
+            mat1[i][j] = 0;
+            mat2[i][j] = 0;
+            matSOMA[i][j] = 0;
+            matPRODUTO[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < 9; i++)
+    {
+        for (int j = 0; j < 9; j++)
+        {
+            mat1[i][j] = rand() % 10;
+        }
+    }
+    for (int i = 0; i < 9; i++)
+    {
+        for (int j = 0; j < 9; j++)
+        {
+
+            mat2[i][j] = rand() % 10;
+        }
+    }
+
+    int vetMat1[36];
+    int vetMat2[36];
+
+    for (int j = 0; j < 9; j++)
+    {
+        vetMat1[j] = 0;
+        vetMat2[j] = 0;
+    }
+    int contador1 = 0;
+    for (int j = 0; j < 9; j++)
+    {
+        for (int k = 0; k < 9; k++)
+        {
+            if (k >= j)
+            {
+                vetMat1[contador1] = mat1[j][k];
+                contador1++;
+            }
+        }
+    }
+    contador1 = 0;
+    for (int j = 0; j < 9; j++)
+    {
+        for (int k = 0; k < 9; k++)
+        {
+            if (k >= j)
+            {
+
+                vetMat2[contador1] = mat2[j][k];
+                contador1++;
+            }
+        }
+    }
+    // soma
+    int contador2 = 0;
+    for (int j = 0; j < 9; j++)
+    {
+        for (int k = 0; k < 9; k++)
+        {
+            if (k >= j)
+            {
+                matSOMA[j][k] = vetMat1[contador2] + vetMat2[contador2];
+                matSOMA[k][j] = matSOMA[j][k];
+                contador2++;
+            }
+        }
+    }
+    output_file << "Matriz soma: " << endl;
+    for (int j = 0; j < 9; j++)
+    {
+        for (int k = 0; k < 9; k++)
+        {
+            output_file << "|" << matSOMA[j][k];
+        }
+        output_file << "|" << endl;
+    }
+    output_file << endl;
+    output_file << endl;
+    // produto
+    int contador3 = 0;
+    int contador3AUX = 0;
+    int valorPos = 9;
+    int calculo1 = 0;
+    int calculo2 = 0;
+    int linha1 = 0;
+    int linha2 = 0;
+    int coluna1 = 0;
+    int coluna2 = 0;
+
+    for (int j = 0; j < 9; j++)
+    {
+        for (int k = 0; k < 9; k++)
+        {
+            if (k >= j)
+            {
+
+                for (int i = 0; i < 9; i++)
+                {
+                    calculo1 = (linha1 + 1) * 9 - 9 - (((linha1 + 1) * ((linha1 + 1) - 1)) / 2) + (coluna1 + 1 - (linha1 + 1));
+                    calculo2 = (coluna2 + 1) * 9 - 9 - (((coluna2 + 1) * ((coluna2 + 1) - 1)) / 2) + (linha2 + 1 - (coluna2 + 1));
+                    matPRODUTO[j][k] = matPRODUTO[j][k] + (vetMat1[calculo1] * vetMat2[calculo2]);
+                    coluna1++;
+                    linha2++;
+                }
+                coluna2 = k;
+                linha1 = j;
+                coluna1 = 0;
+                linha2 = 0;
+                matPRODUTO[k][j] = matPRODUTO[j][k];
+            }
+        }
+    }
+    output_file << "Matriz Produto: " << endl;
+    for (int j = 0; j < 9; j++)
+    {
+        for (int k = 0; k < 9; k++)
+        {
+            output_file << "|" << matPRODUTO[j][k];
+        }
+        output_file << "|" << endl;
+    }
+}
 int menu()
 {
 
@@ -266,7 +404,7 @@ int menu()
     cout << "[4] matriz adjacência binária a partir do vetor compactado" << endl;
     cout << "[5] busca no vetor de valores por parametro i,j" << endl;
     cout << "[6] busca inversa dos valores do vetor para posição na matriz" << endl;
-    cout << "[7] Imprimir ordenacao topológica" << endl;
+    cout << "[7] matrizes e suas operacoes" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -282,6 +420,7 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
     // fechoTransitivoIndireto;
     case 1:
     {
+        output_file << "QUESTAO 2" << endl;
         int matrizADJ[100][100];
         matrizAdj(matrizADJ, graph);
         for (int j = 0; j < order; j++)
@@ -292,11 +431,14 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
             }
             output_file << "|" << endl;
         }
+        output_file << endl;
+        output_file << endl;
         break;
     }
     // fechoTransitivoDireto;
     case 2:
     {
+        output_file << "QUESTAO 3" << endl;
         int vetBin[4950];
         int matrizADJ[100][100];
         matrizAdj(matrizADJ, graph);
@@ -306,11 +448,13 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
             output_file << "|" << vetBin[o];
         }
         output_file << "|" << endl;
-
+        output_file << endl;
+        output_file << endl;
         break;
     }
     case 3:
     {
+        output_file << "QUESTAO 4" << endl;
         int vetBin[4950];
 
         int matrizADJ[100][100];
@@ -328,12 +472,15 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
             output_file << "|" << vetCompact[o];
         }
         output_file << "|" << endl;
+        output_file << endl;
+        output_file << endl;
         break;
     }
 
     // AGM - Kruscal;
     case 4:
     {
+        output_file << "QUESTAO 5" << endl;
         int vetBin[4950];
         int matrizADJ[100][100];
         matrizAdj(matrizADJ, graph);
@@ -347,32 +494,46 @@ void selecionar(int selecao, Graph *graph, ofstream &output_file, int order)
         vetorCompact(vetBin, vetCompact, tamanho);
         int matrizADJTriSup[100][100];
         matrizAdjPorCompact(vetCompact, tamanho, matrizADJTriSup);
-        for (int j = 0; j < order; j++)
+
+        cout << "teste2" << endl;
+        for (int i = 0; i < 100; i++)
         {
-            for (int k = 0; k < order; k++)
+            for (int j = 0; j < 100; j++)
             {
-                output_file << "|" << matrizADJTriSup[j][k];
+                output_file << "|" << matrizADJTriSup[i][j];
             }
             output_file << "|" << endl;
         }
+        cout << "teste3" << endl;
+        output_file << endl;
+        output_file << endl;
         break;
     }
     // AGM Prim;
     case 5:
     {
+        output_file << "QUESTAO 6" << endl;
         mapeamento(output_file);
+        output_file << endl;
+        output_file << endl;
         break;
     }
     // Imprimir caminhamento em Profundidade
     case 6:
     {
+        output_file << "QUESTAO 7" << endl;
         mapeamentoInverso(output_file, graph);
+        output_file << endl;
+        output_file << endl;
         break;
     }
     // Ordenação Topologica;
     case 7:
     {
-
+        output_file << "QUESTAO 8" << endl;
+        matOperat(output_file);
+        output_file << endl;
+        output_file << endl;
         break;
     }
     // Caminho Mínimo entre dois vértices - Dijkstra
